@@ -1,0 +1,110 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.asciidoctor.jvm.convert' version '4.0.4'
+    id 'com.bmuschko.docker-spring-boot-application' version '9.4.0'
+}
+
+import com.bmuschko.gradle.docker.tasks.image.*
+
+group = 'de.gaz'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = "21"
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
+}
+
+ext {
+    set('snippetsDir', file("build/generated-snippets"))
+}
+
+dependencies {
+
+    // Dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.jetbrains:annotations:26.0.1'
+    implementation 'io.jsonwebtoken:jjwt:0.12.6'
+
+    // Compiled code only
+    compileOnly 'org.projectlombok:lombok'
+
+    // ClamAV
+    implementation 'xyz.capybara:clamav-client:2.1.2'
+
+    // Development
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+
+    // Two factor
+    implementation 'commons-codec:commons-codec:1.17.1'
+
+    // Runtime drivers
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    runtimeOnly 'com.h2database:h2'
+
+    // Annotation processing
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Tests
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'com.h2database:h2'
+
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.named('test') {
+    outputs.dir snippetsDir
+    useJUnitPlatform()
+}
+
+tasks.named('asciidoctor') {
+    inputs.dir snippetsDir
+    dependsOn test
+}
+
+tasks.register('generateDockerfile', Dockerfile) {
+    from 'eclipse-temurin:17-jdk-alpine'
+    label 'authors': 'Yonas & Ivo', 'maintainer': 'gaz'
+    workingDir '/var/elementedu'
+    volume '/tmp'
+    arg 'JAR_FILE'
+    copyFile '${JAR_FILE}', 'app.jar'
+    exposePort 8080
+    entryPoint 'java', '-jar', 'app.jar'
+}
+
+tasks.register('syncJarFile', Copy) {
+    dependsOn assemble
+    from jar.destinationDirectory
+    into "$layout/docker"
+}
+
+

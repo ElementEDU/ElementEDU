@@ -1,0 +1,17 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'ElementEDU'
+
+def projects = ["Frontend", "Backend"]
+
+projects.forEach {projectName ->
+    def loweredProjectName = projectName.toLowerCase(Locale.ENGLISH)
+    include(loweredProjectName)
+    findProject(":${loweredProjectName}").projectDir = file("EEDU-${projectName}")
+}

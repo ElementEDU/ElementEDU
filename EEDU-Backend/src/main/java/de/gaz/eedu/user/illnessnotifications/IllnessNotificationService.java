@@ -1,0 +1,124 @@
+package de.gaz.eedu.user.illnessnotifications;
+
+import de.gaz.eedu.entity.EntityService;
+import de.gaz.eedu.exception.CreationException;
+import de.gaz.eedu.file.FileCreateModel;
+import de.gaz.eedu.file.FileEntity;
+import de.gaz.eedu.file.FileService;
+import de.gaz.eedu.file.exception.MaliciousFileException;
+import de.gaz.eedu.user.UserEntity;
+import de.gaz.eedu.user.UserService;
+import de.gaz.eedu.user.UserStatus;
+import de.gaz.eedu.user.illnessnotifications.model.IllnessNotificationCreateModel;
+import de.gaz.eedu.user.illnessnotifications.model.IllnessNotificationModel;
+import de.gaz.eedu.user.illnessnotifications.model.ReducedIllnessNotificationModel;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Set;
+
+@RequiredArgsConstructor
+@Service public class IllnessNotificationService extends EntityService<Long, IllnessNotificationRepository, IllnessNotificationEntity, IllnessNotificationModel, IllnessNotificationCreateModel>
+{
+    private final IllnessNotificationRepository illnessNotificationRepository;
+    private final UserService userService;
+    private final FileService fileService;
+
+    @NotNull public List<IllnessNotificationEntity> loadEntitiesByDate(@NotNull Long date){
+        return getRepository().getIllnessNotificationEntitiesByTimeStamp(date);
+    }
+
+    @Override
+    public @NotNull IllnessNotificationRepository getRepository()
+    {
+        return illnessNotificationRepository;
+    }
+
+    @Transactional
+    public boolean excuse(@NotNull Long userId, @NotNull String reason, @NotNull Long expirationTime, @Nullable MultipartFile file)
+    {
+        @Nullable Long fileId = uploadNotification(file);
+        createEntity(Set.of(new IllnessNotificationCreateModel(userId,
+                reason,
+                LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toEpochSecond(),
+                expirationTime,
+                fileId)));
+        return true;
+    }
+
+    public @Nullable Long uploadNotification(@Nullable MultipartFile file) throws MaliciousFileException
+    {
+        if(!(file != null && !file.isEmpty()))
+        {
+            return null;
+        }
+
+        FileEntity fileEntity = fileService.createEntity(new FileCreateModel(
+                "illness_notifications",
+                new String[] { "Management", "ADMINISTRATOR", "ROLE_administrator", "USER_CREATE" },
+                new String[] { "illness_notification" }));
+
+        fileEntity.uploadBatch("", file);
+        return fileEntity.getId();
+    }
+
+    @Transactional
+    public ResponseEntity<Boolean> respondToNotification(@NotNull IllnessNotificationEntity entity, @NotNull IllnessNotificationStatus status)
+    {
+        entity.setStatus(status);
+        userService.loadEntityById(entity.getUser().getId()).ifPresentOrElse(userEntity ->
+                        userEntity.setStatus(status.equals(IllnessNotificationStatus.ACCEPTED) ? UserStatus.EXCUSED : UserStatus.UNEXCUSED),
+                () -> {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                });
+        saveEntity(entity);
+        return ResponseEntity.ok(true);
+    }
+
+    public ResponseEntity<List<ReducedIllnessNotificationModel>> getReducedEntitiesByUser(@NotNull Long userId)
+    {
+        UserEntity user = userService.loadEntityByIDSafe(userId);
+        return ResponseEntity.ok(illnessNotificationRepository.getIllnessNotificationEntitiesByUser(user).stream()
+                .map(entity -> entity.toModel().toReducedModel()).toList());
+    }
+
+    public ResponseEntity<List<IllnessNotificationModel>> getPendingNotifications()
+    {
+        return ResponseEntity.ok(illnessNotificationRepository.
+                getIllnessNotificationEntitiesByStatus(IllnessNotificationStatus.PENDING)
+                .stream().map(IllnessNotificationEntity::toModel).toList());
+    }
+
+    @Override
+    public @NotNull List<IllnessNotificationEntity> createEntity(@NotNull Set<IllnessNotificationCreateModel> model) throws CreationException
+    {
+        List<IllnessNotificationEntity> entities = model.stream().map(createModel ->
+                createModel.toEntity(new IllnessNotificationEntity(), (entity ->
+                {
+                    entity.setUser(userService.loadEntityByIDSafe(createModel.userId()));
+                    entity.setFileEntity(fileService.getRepository().getReferenceById(createModel.fileId()));
+                    return entity;
+                }))).toList();
+        return illnessNotificationRepository.saveAll(entities);
+        // same thing:
+//        return illnessNotificationRepository.save(model.toEntity(new IllnessNotificationEntity(),
+//                new CreationFactory<>() {
+//                    @Override
+//                    public @NotNull IllnessNotificationEntity transform(@NotNull IllnessNotificationEntity entity) {
+//                        entity.setUser(userService.loadEntityByIDSafe(model.userId()));
+//                        entity.setFileEntity(fileService.loadEntityByIDSafe(model.fileId()));
+//                        return entity;
+//                    }
+//                }));
+    }
+}

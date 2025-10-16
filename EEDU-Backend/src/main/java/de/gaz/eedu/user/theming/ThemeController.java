@@ -1,0 +1,119 @@
+package de.gaz.eedu.user.theming;
+
+import de.gaz.eedu.exception.EntityUnknownException;
+import de.gaz.eedu.exception.NameOccupiedException;
+import de.gaz.eedu.user.UserEntity;
+import de.gaz.eedu.user.UserService;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Set;
+
+
+@RestController
+@RequestMapping(value = "/api/v1/user", method = RequestMethod.POST)
+@AllArgsConstructor
+public class ThemeController
+{
+    @Getter(AccessLevel.PROTECTED)
+    private final ThemeService themeService;
+    @Getter(AccessLevel.PROTECTED)
+    private final UserService userService;
+    private final ThemeRepository themeRepository;
+
+    /**
+     * Loads User Entity by given ID and sets its Theme Entity to the one that is holding the given id.
+     * Returns the Theme Entity as a model.
+     * @param theme_id ID of the theme to set
+     * @return ThemeModel
+     */
+    @PreAuthorize("@verificationService.isFullyAuthenticated()") @PutMapping("/me/theme/set")
+    public ResponseEntity<ThemeModel> setTheme(@AuthenticationPrincipal Long id, @RequestBody Long theme_id){
+        try
+        {
+            UserEntity userEntity = userService.loadEntityById(id).orElseThrow(IllegalArgumentException::new);
+            ThemeEntity loadedEntity = themeService.getRepository().findById(theme_id).orElseThrow(IllegalArgumentException::new);
+            userEntity.setThemeEntity(userService, loadedEntity);
+            return ResponseEntity.ok(loadedEntity.toModel());
+        }
+        catch(IllegalArgumentException illegalArgumentException)
+        {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    /**
+     * Get Theme Model of user with the given <code>id</code>
+     * @param id ID of the theme to output
+     * @return ThemeModel
+     */
+    @PreAuthorize("@verificationService.isFullyAuthenticated()")
+    @GetMapping("/me/theme/get") public ResponseEntity<ThemeModel> getTheme(@AuthenticationPrincipal Long id){
+        if(userService.loadEntityById(id).isPresent())
+        {
+            return ResponseEntity.ok(userService.loadEntityById(id).get().getThemeEntity().toModel());
+        }
+
+        ThemeCreateModel fallbackTheme = new ThemeCreateModel("fallback", new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF}, new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF});
+        // Return fallback theme if theme cannot be loaded
+        return ResponseEntity.ok(fallbackTheme.toEntity(new ThemeEntity()).toModel());
+    }
+
+    @PreAuthorize("@verificationService.isFullyAuthenticated()")
+    @GetMapping("/theme/get/{themeId}") public ResponseEntity<ThemeModel> getTheme(@AuthenticationPrincipal Long id, @NotNull @PathVariable Long themeId){
+        if(userService.loadEntityById(id).isPresent())
+        {
+            return ResponseEntity.ok(themeService.getRepository().findById(themeId).orElseThrow(() -> new EntityUnknownException(themeId)).toModel());
+        }
+
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Returns all themes in the database as SimpleThemeModels.
+     * @return SimpleThemeModel
+     */
+    @PreAuthorize("@verificationService.isFullyAuthenticated()") @GetMapping("/theme/all") public ResponseEntity<SimpleThemeModel[]> getAllThemes()
+    {
+        return ResponseEntity.ok(themeRepository.findAll().stream()
+                                                .map(ThemeEntity::toSimpleModel).toArray(SimpleThemeModel[]::new));
+    }
+
+    /**
+     * Create theme with given <code>ThemeEntity</code> data in request body.
+     * Will throw a NameOccupiedException if id is already used by another Theme Entity.
+     * @param themeCreateModel template of the theme to be created
+     * @return ThemeEntity
+     */
+    @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).USER_CREATE.toString())") @PostMapping("/theme/create")
+    public @NotNull ResponseEntity<ThemeEntity[]> createTheme(@NotNull @RequestBody ThemeCreateModel[] themeCreateModel)
+    {
+        try
+        {
+            return ResponseEntity.ok(themeService.createEntity(Set.of(themeCreateModel)).toArray(ThemeEntity[]::new));
+        }
+        catch(NameOccupiedException nameOccupiedException)
+        {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+    }
+
+    // Possibly set for deletion.
+    @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).USER_CREATE.toString())") @PostMapping("/theme/delete") public @NotNull ResponseEntity<?> deleteTheme(@NotNull @RequestBody Long themeId)
+    {
+        if(!themeService.delete(themeId))
+        {
+            return ResponseEntity.ok(themeService.delete(themeId));
+        }
+
+        throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+    }
+}

@@ -1,0 +1,42 @@
+plugins {
+    id "com.github.node-gradle.node" version "7.0.1"
+}
+
+final String nodejs = "24.3.0"
+final String npm = "11.4.2"
+final String angularVersion = "20.0.4"
+
+node {
+    version = nodejs
+    npmVersion = npm
+    download = true
+}
+
+tasks.register("ngServe", NodeTask).configure {
+    dependsOn("installAngularCli")
+    dependsOn("npmUpdate")
+    script = file("node_modules/@angular/cli/bin/ng.js")
+    args = ["serve"]
+}
+
+tasks.register("ngSetup", NodeTask).configure {
+    dependsOn("installAngularCli")
+    dependsOn("npmUpdate")
+    script = file("node_modules/@angular/cli/bin/ng.js")
+    args = ["new", "ElementEDU-Frontend"]
+}
+
+tasks.register("printVersion", NodeTask).configure {
+    dependsOn("installAngularCli")
+    dependsOn("npmUpdate")
+    script = file("node_modules/@angular/cli/bin/ng.js")
+    args = ["version"]
+}
+
+tasks.register("installAngularCli", NpmTask).configure {
+    args = ["install", "@angular/cli@${angularVersion}"]
+}
+
+tasks.register("npmUpdate", NpmTask).configure {
+    args = ["update"]
+}
