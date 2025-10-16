@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {environment} from '../../environment/environment';
-import {Entity} from './entity';
+import {Model} from './model';
 import {BehaviorSubject, finalize, map, Observable, OperatorFunction, tap} from 'rxjs';
 import {CreateModel} from './create-model';
 import {HttpClient} from '@angular/common/http';
@@ -16,11 +16,11 @@ import {HttpClient} from '@angular/common/http';
 @Injectable({
     providedIn: 'root'
 })
-export abstract class EntityService<P, C extends CreateModel, E extends Entity<P>> {
+export abstract class EntityService<P, C extends CreateModel, M extends Model<P>> {
 
     private readonly CONTEXT: { withCredentials: true } = { withCredentials: true };
 
-    private readonly _subject: BehaviorSubject<readonly E[]> = new BehaviorSubject<readonly E[]>([]);
+    private readonly _subject: BehaviorSubject<readonly M[]> = new BehaviorSubject<readonly M[]>([]);
     private _fetched: boolean = false;
 
     protected constructor(
@@ -42,16 +42,16 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      *
      * @return {Observable<readonly E[]>} An observable that emits an array of entities.
      */
-    public get fetchAll(): Observable<readonly E[]>
+    public get fetchAll(): Observable<readonly M[]>
     {
         return this._http.get<any>(`${this.location}/get`, this.CONTEXT).pipe(
-            this.toEntitiesOperation,
-            tap((entities: readonly E[]): void => { this._subject.next(this.sort(entities)); }),
+            this.toModelOperation,
+            tap((entities: readonly M[]): void => { this._subject.next(this.sort(entities)); }),
             finalize((): void => { this._fetched = true; })
         );
     }
 
-    protected sort(input: readonly E[]): readonly E[]
+    protected sort(input: readonly M[]): readonly M[]
     { // to be overridden by subclasses
         return input;
     }
@@ -62,10 +62,10 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      * @param {P} id - The identifier of the entity to fetch.
      * @return {Observable<E>} An observable containing the fetched entity.
      */
-    public fetch(id: P): Observable<E>
+    public fetch(id: P): Observable<M>
     {
         return this._http.get<any>(`${this.location}/get/${id}`, this.CONTEXT).pipe(
-            map((data: any): E => this.toEntity(data))
+            map((data: any): M => this.toModel(data))
         );
     }
 
@@ -75,11 +75,11 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      * @param {C[]} model - An array of model objects of type C to be converted into packets and sent to the server.
      * @return {Observable<readonly E[]>} An observable that emits an array of created entities of type E.
      */
-    public create(model: C[]): Observable<readonly E[]>
+    public create(model: C[]): Observable<readonly M[]>
     {
         const packets: any[] = model.map((item: C): any => item.toPacket);
         return this._http.post<any>(`${this.location}/create`, packets, this.CONTEXT).pipe(
-            this.toEntitiesOperation, tap((entities: readonly E[]): void => { this.pushCreated(entities); })
+            this.toModelOperation, tap((entities: readonly M[]): void => { this.pushCreated(entities); })
         );
     }
 
@@ -101,8 +101,8 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      * @return {OperatorFunction<any[], readonly E[]>} An observable transformation function that maps
      * input data to a readonly array of entities.
      */
-    private get toEntitiesOperation(): OperatorFunction<any[], readonly E[]> {
-        return map((data: any): readonly E[] => this.toEntities(data));
+    private get toModelOperation(): OperatorFunction<any[], readonly M[]> {
+        return map((data: any): readonly M[] => this.toModels(data));
     }
 
     /**
@@ -111,8 +111,8 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      * @param {any[]} data - The array of data objects to be converted into entities.
      * @return {readonly E[]} An array of entities of type E, created from the provided data.
      */
-    protected toEntities(data: any[]): readonly E[] {
-        return data.map((item: any): E => this.toEntity(item));
+    protected toModels(data: any[]): readonly M[] {
+        return data.map((item: any): M => this.toModel(item));
     }
 
     /**
@@ -122,7 +122,7 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      * @param {any} data - The input data to be transformed into an entity.
      * @return {E} The transformed entity of type E.
      */
-    protected abstract toEntity(data: any): E;
+    protected abstract toModel(data: any): M;
 
     /**
      * Retrieves the current fetched status.
@@ -138,7 +138,7 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      *
      * @return {readonly E[]} The current value of the subject.
      */
-    public get value(): readonly E[] {
+    public get value(): readonly M[] {
         return this._subject.value;
     }
 
@@ -148,7 +148,7 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      *
      * @return {Observable<readonly E[]>} An observable that emits an array of elements.
      */
-    public get value$(): Observable<readonly E[]> {
+    public get value$(): Observable<readonly M[]> {
         if (!this.fetched) {
             this.fetchAll.subscribe();
         }
@@ -161,7 +161,7 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      * @param {readonly E[]} response - An array of newly created items to be added.
      * @return {void} This method does not return a value.
      */
-    protected pushCreated(response: readonly E[]): void {
+    protected pushCreated(response: readonly M[]): void {
         this._subject.next([...this.value, ...response]);
     }
 
@@ -173,6 +173,6 @@ export abstract class EntityService<P, C extends CreateModel, E extends Entity<P
      */
     protected postDelete(id: readonly P[]): void {
         const idSet = new Set(id);
-        this._subject.next(this.value.filter((item: E): boolean => !idSet.has(item.id())));
+        this._subject.next(this.value.filter((item: M): boolean => !idSet.has(item.id)));
     }
 }
