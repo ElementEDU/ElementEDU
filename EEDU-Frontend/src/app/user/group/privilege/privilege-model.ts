@@ -1,6 +1,6 @@
 import {Model} from '../../../entity/model';
 
-export class PrivilegeEntity implements Model<string> {
+export class PrivilegeModel implements Model<string> {
 
     public constructor(private readonly _id: string) {}
 
