@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,7 +52,7 @@ public class PrivilegeController extends EntityController<String, PrivilegeServi
      */
     @PutMapping("/{group}/grant/{privileges}")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).GROUP_PRIVILEGE_GRANT.toString())")
-    public @NotNull ResponseEntity<Void> grantPrivileges(@PathVariable String group, @PathVariable @NotNull String[] privileges) throws StateTransitionException
+    public @NotNull ResponseEntity<@NonNull Void> grantPrivileges(@PathVariable String group, @PathVariable @NotNull String[] privileges) throws StateTransitionException
     {
         log.info("Received incoming request for granting privilege(s) {} to group {}.", privileges, group);
         return empty(getService().grantPrivileges(group, privileges) ? HttpStatus.OK : HttpStatus.NOT_MODIFIED);
@@ -74,7 +75,7 @@ public class PrivilegeController extends EntityController<String, PrivilegeServi
      */
     @DeleteMapping("/{group}/revoke/{privileges}")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).GROUP_PRIVILEGE_REVOKE.toString())")
-    public @NotNull ResponseEntity<Void> revokePrivileges(@PathVariable String group, @PathVariable @NotNull String[] privileges)
+    public @NotNull ResponseEntity<@NonNull Void> revokePrivileges(@PathVariable String group, @PathVariable @NotNull String[] privileges)
     {
         log.info("Received incoming request for revoking privilege(s) {} to group {}.", privileges, group);
         return empty(getService().revokePrivileges(group, privileges) ? HttpStatus.OK : HttpStatus.NOT_MODIFIED);
@@ -83,28 +84,28 @@ public class PrivilegeController extends EntityController<String, PrivilegeServi
     @PostMapping("/create")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).PRIVILEGE_CREATE.toString())")
     @Override
-    public @NotNull ResponseEntity<PrivilegeModel[]> create(@NotNull @RequestBody PrivilegeCreateModel[] model) throws CreationException
+    public @NotNull ResponseEntity<PrivilegeModel @NonNull []> create(@NotNull @RequestBody PrivilegeCreateModel[] model) throws CreationException
     {
         return super.create(model);
     }
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).PRIVILEGE_DELETE.toString())")
-    @Override public @NotNull ResponseEntity<Void> delete(@PathVariable @NotNull String[] id)
+    @Override public @NotNull ResponseEntity<@NonNull Void> delete(@PathVariable @NotNull String[] id)
     {
         return super.delete(id);
     }
 
     @GetMapping("/get/{id}")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).PRIVILEGE_GET.toString())")
-    @Override public @NotNull ResponseEntity<PrivilegeModel> getData(@PathVariable @NotNull String id)
+    @Override public @NotNull ResponseEntity<@NonNull PrivilegeModel> getData(@PathVariable @NotNull String id)
     {
         return super.getData(id);
     }
 
     @GetMapping("/get/all")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).PRIVILEGE_GET.toString())")
-    @Override public @NotNull ResponseEntity<Set<PrivilegeModel>> fetchAll()
+    @Override public @NotNull ResponseEntity<PrivilegeModel @NonNull []> fetchAll()
     {
         return super.fetchAll();
     }

@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,7 +40,7 @@ public class AppointmentController extends EntityController<Long, AppointmentSer
 
     @PostMapping("/{course}/schedule/frequent")
     @PreAuthorize("hasRole('teacher')")
-    public @NotNull ResponseEntity<FrequentAppointmentModel[]> scheduleFrequentAppointment(@PathVariable long course, @NotNull @RequestBody FrequentAppointmentCreateModel... appointments)
+    public @NotNull ResponseEntity<FrequentAppointmentModel @NonNull []> scheduleFrequentAppointment(@PathVariable long course, @NotNull @RequestBody FrequentAppointmentCreateModel... appointments)
     {
         log.info(
                 "Received incoming request for scheduling frequent appointment(s) {} in course {}.",
@@ -52,14 +53,14 @@ public class AppointmentController extends EntityController<Long, AppointmentSer
     }
 
     @PostMapping("/update/standalone/{appointment}") @PreAuthorize("hasRole('teacher') or hasRole('administrator')")
-    public @NotNull ResponseEntity<AppointmentEntryModel> updateAppointment(@PathVariable long appointment, @NotNull @RequestBody AppointmentUpdateModel updateModel)
+    public @NotNull ResponseEntity<@NonNull AppointmentEntryModel> updateAppointment(@PathVariable long appointment, @NotNull @RequestBody AppointmentUpdateModel updateModel)
     {
         log.info("Received incoming request for altering the appointment {} with the updated data {}.", appointment, updateModel);
         return ResponseEntity.ok(getService().update(appointment, updateModel));
     }
 
     @PostMapping("/{course}/unschedule/frequent") @PreAuthorize("hasRole('teacher') or hasRole('administrator')")
-    public @NotNull ResponseEntity<Void> unscheduleAppointment(@PathVariable long course, @NotNull Long... appointments)
+    public @NotNull ResponseEntity<@NonNull Void> unscheduleAppointment(@PathVariable long course, @NotNull Long... appointments)
     {
         log.info("Received incoming request for unscheduling frequent appointment(s) {} from course {}.", appointments, course);
         boolean modified = getService().unscheduleFrequent(course, appointments);
@@ -67,7 +68,7 @@ public class AppointmentController extends EntityController<Long, AppointmentSer
     }
 
     @PutMapping("/{course}/schedule/standalone") @PreAuthorize("hasRole('teacher') or hasRole('administrator')")
-    public @NotNull ResponseEntity<AppointmentEntryModel[]> scheduleAppointment(@PathVariable long course, @RequestBody @NotNull AppointmentEntryCreateModel... createModel)
+    public @NotNull ResponseEntity<AppointmentEntryModel @NonNull []> scheduleAppointment(@PathVariable long course, @RequestBody @NotNull AppointmentEntryCreateModel... createModel)
     {
         List<AppointmentEntryModel> createdEntities = getService().createAppointment(course, Set.of(createModel));
         return ResponseEntity.ok(createdEntities.toArray(AppointmentEntryModel[]::new));
@@ -75,18 +76,18 @@ public class AppointmentController extends EntityController<Long, AppointmentSer
 
     @DeleteMapping("/frequent/delete/{id}")
     @PreAuthorize("@verificationService.isFullyAuthenticated() && hasRole('teacher')") @Override
-    public @NotNull ResponseEntity<Void> delete(@PathVariable @NotNull Long[] id)
+    public @NotNull ResponseEntity<@NonNull Void> delete(@PathVariable @NotNull Long[] id)
     {
         return super.delete(id);
     }
 
     @GetMapping("/frequent/get/{id}") @Override
-    public @NotNull ResponseEntity<FrequentAppointmentModel> getData(@PathVariable @NotNull Long id)
+    public @NotNull ResponseEntity<@NonNull FrequentAppointmentModel> getData(@PathVariable @NotNull Long id)
     {
         return super.getData(id);
     }
 
-    @GetMapping("/frequent/get/all") @Override public @NotNull ResponseEntity<Set<FrequentAppointmentModel>> fetchAll()
+    @GetMapping("/frequent/get/all") @Override public @NotNull ResponseEntity<FrequentAppointmentModel @NonNull []> fetchAll()
     {
         return super.fetchAll();
     }

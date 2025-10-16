@@ -6,13 +6,12 @@ import de.gaz.eedu.exception.CreationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Array;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 @Slf4j @AllArgsConstructor
@@ -37,15 +36,13 @@ public abstract class EntityController<P, S extends EntityService<P, ?, ?, M, C>
      * @throws CreationException If there is a problem with creating the entity,
      *                           this exception will be thrown. It contains the HTTP status code for the error response.
      */
-    public @NotNull ResponseEntity<M[]> create(@NotNull C[] model) throws CreationException
+    public @NotNull ResponseEntity<M @NonNull []> create(@NotNull C[] model) throws CreationException
     {
         log.info("Received an incoming create request from class {}.", getClass().getSuperclass());
         try
         {
             List<M> created = getService().create(new HashSet<>(List.of(model)));
-            //noinspection unchecked
-            M[] models = created.toArray((M[]) Array.newInstance(created.getFirst().getClass(), created.size()));
-            return ResponseEntity.status(HttpStatus.CREATED).body(models);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toArray(created));
         }
         catch (CreationException creationException)
         {
@@ -61,7 +58,7 @@ public abstract class EntityController<P, S extends EntityService<P, ?, ?, M, C>
      * @return A Boolean value. If the deletion is successful, the method returns true.
      * Otherwise, it returns false (e.g. if no entity with the given id exists).
      */
-    public @NotNull ResponseEntity<Void> delete(@NotNull P[] id)
+    public @NotNull ResponseEntity<@NonNull Void> delete(@NotNull P[] id)
     {
         log.info("Received an incoming delete request from class {} with id {}.", getClass().getSimpleName(), id);
         return getService().delete(List.of(id)) ? empty(HttpStatus.OK) : empty(HttpStatus.NOT_MODIFIED);
@@ -80,25 +77,30 @@ public abstract class EntityController<P, S extends EntityService<P, ?, ?, M, C>
      * If no entity with the given id exists, it returns a ResponseEntity
      * with HTTP status 404 (Not Found), and its body is null.
      */
-    public @NotNull ResponseEntity<M> getData(@NotNull P id)
+    public @NotNull ResponseEntity<@NonNull M> getData(@NotNull P id)
     {
         log.info("Received an incoming get request from class {} with id {}.", getClass().getSimpleName(), id);
         return getService().loadById(id).map(ResponseEntity::ok) .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
     }
 
-    public @NotNull ResponseEntity<Set<M>> fetchAll()
+    public @NotNull ResponseEntity<M @NonNull []> fetchAll()
     {
         return fetchAll((m) -> true);
     }
 
-    public @NotNull final ResponseEntity<Set<M>> fetchAll(@NotNull Predicate<M> predicate)
+    public @NotNull final ResponseEntity<M @NonNull []> fetchAll(@NotNull Predicate<M> predicate)
     {
         log.info("Received an incoming get all request from class {}.", getClass().getSuperclass());
-        return ResponseEntity.ok(getService().findAll(predicate));
+        return ResponseEntity.ok(toArray(getService().findAll(predicate)));
     }
 
-    protected @NotNull ResponseEntity<Void> empty(@NotNull HttpStatus status)
+    protected @NotNull ResponseEntity<@NonNull Void> empty(@NotNull HttpStatus status)
     {
         return ResponseEntity.status(status).build();
+    }
+
+    @SuppressWarnings("unchecked") private static <X> X @NonNull [] toArray(@NotNull Collection<X> set)
+    {
+        return set.toArray((X[]) Array.newInstance(set.iterator().next().getClass(), set.size()));
     }
 }

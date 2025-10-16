@@ -9,13 +9,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
 
 @Slf4j
 @RestController
@@ -28,7 +28,7 @@ public class CourseController extends EntityController<Long, CourseService, Cour
 
     @PutMapping("/{course}/subject/{subject}")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).COURSE_ALTER_SUBJECT.toString())")
-    public @NotNull ResponseEntity<Void> setSubject(@PathVariable long course, @PathVariable String subject)
+    public @NotNull ResponseEntity<@NonNull Void> setSubject(@PathVariable long course, @PathVariable String subject)
     {
         log.info("Received incoming request for setting the subject of course {} to {}.", course, subject);
         return empty(getService().setSubject(course, subject) ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
@@ -36,7 +36,7 @@ public class CourseController extends EntityController<Long, CourseService, Cour
 
     @PostMapping("/{course}/attach")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).COURSE_ATTACH_USER.toString())")
-    public @NotNull ResponseEntity<Void> attachUser(@PathVariable long course, @NotNull @RequestBody Long... users)
+    public @NotNull ResponseEntity<@NonNull Void> attachUser(@PathVariable long course, @NotNull @RequestBody Long... users)
     {
         log.info("Received incoming request for attaching user(s) {} to course {}.", users, course);
         return empty(getService().attachUser(course, users) ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
@@ -44,7 +44,7 @@ public class CourseController extends EntityController<Long, CourseService, Cour
 
     @GetMapping("{course}/detach")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).COURSE_DETACH_USER.toString())")
-    public @NotNull ResponseEntity<Void> detachUser(@PathVariable long course, @NotNull @RequestBody Long... users)
+    public @NotNull ResponseEntity<@NonNull Void> detachUser(@PathVariable long course, @NotNull @RequestBody Long... users)
     {
         log.info("Received incoming request for detaching user(s) {} from course {}.", users, course);
         return empty(getService().detachUser(course, users) ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
@@ -52,40 +52,40 @@ public class CourseController extends EntityController<Long, CourseService, Cour
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).COURSE_CREATE.toString())") @Override
-    public @NotNull ResponseEntity<CourseModel[]> create(@NotNull @RequestBody CourseCreateModel[] model)
+    public @NotNull ResponseEntity<CourseModel @NonNull []> create(@NotNull @RequestBody CourseCreateModel[] model)
     {
         return super.create(model);
     }
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).COURSE_DELETE.toString())") @Override
-    public @NotNull ResponseEntity<Void> delete(@NotNull @PathVariable Long[] id)
+    public @NotNull ResponseEntity<@NonNull Void> delete(@NotNull @PathVariable Long[] id)
     {
         return super.delete(id);
     }
 
     @GetMapping("/users/{course}")
-    public @NotNull ResponseEntity<ReducedUserModel[]> getUsers(@PathVariable long course)
+    public @NotNull ResponseEntity<ReducedUserModel @NonNull []> getUsers(@PathVariable long course)
     {
         return ResponseEntity.ok(getService().loadReducedModelsByCourse(course).toArray(new ReducedUserModel[0]));
     }
 
     @GetMapping("/get/{id}")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).COURSE_GET.toString())") @Override
-    public @NotNull ResponseEntity<CourseModel> getData(@NotNull @PathVariable Long id)
+    public @NotNull ResponseEntity<@NonNull CourseModel> getData(@NotNull @PathVariable Long id)
     {
         return super.getData(id);
     }
 
     @GetMapping("/get/all")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).COURSE_GET.toString())") @Override
-    public @NotNull ResponseEntity<Set<CourseModel>> fetchAll()
+    public @NotNull ResponseEntity<CourseModel @NonNull []> fetchAll()
     {
         return super.fetchAll();
     }
 
     @GetMapping("/get") @PreAuthorize("@verificationService.isFullyAuthenticated()")
-    public @NotNull ResponseEntity<CourseModel[]> getOwnCourses(@AuthenticationPrincipal long user)
+    public @NotNull ResponseEntity<CourseModel @NonNull []> getOwnCourses(@AuthenticationPrincipal long user)
     {
         log.info("Received incoming request for getting the own courses from user {}.", user);
         return getCourses(user);
@@ -93,7 +93,7 @@ public class CourseController extends EntityController<Long, CourseService, Cour
 
     @GetMapping("/get/courses/{user}")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).COURSE_GET.toString())")
-    public @NotNull ResponseEntity<CourseModel[]> getCourses(@PathVariable long user)
+    public @NotNull ResponseEntity<CourseModel @NonNull []> getCourses(@PathVariable long user)
     {
         log.info("Received incoming request for getting courses from user {}.", user);
         return ResponseEntity.ok(getService().getCourses(user));

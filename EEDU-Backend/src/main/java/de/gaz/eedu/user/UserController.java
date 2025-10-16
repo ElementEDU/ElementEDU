@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -63,7 +64,7 @@ public class UserController extends EntityController<Long, UserService, UserMode
      * @throws CreationException if an error occurs during the user creation process.
      */
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).USER_CREATE.toString())") @PostMapping("/create") @Override
-    public @NotNull ResponseEntity<UserModel[]> create(@NotNull @RequestBody UserCreateModel[] model) throws CreationException
+    public @NotNull ResponseEntity<UserModel @NonNull []> create(@NotNull @RequestBody UserCreateModel[] model) throws CreationException
     {
         return super.create(model);
     }
@@ -81,7 +82,7 @@ public class UserController extends EntityController<Long, UserService, UserMode
      * @return {@code true} if the user was successfully deleted; otherwise, {@code false}.
      */
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).USER_DELETE.toString())") @DeleteMapping("/delete/{id}")
-    @Override public @NotNull ResponseEntity<Void> delete(@PathVariable @NotNull Long[] id)
+    @Override public @NotNull ResponseEntity<@NonNull Void> delete(@PathVariable @NotNull Long[] id)
     {
         return super.delete(id);
     }
@@ -98,7 +99,7 @@ public class UserController extends EntityController<Long, UserService, UserMode
      * @return a {@link ResponseEntity} containing the requested {@link UserModel}.
      */
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).USER_OTHERS_GET.toString()) or #id == authentication.principal")
-    @GetMapping("/get/{id}") @Override public @NotNull ResponseEntity<UserModel> getData(@PathVariable @NotNull Long id)
+    @GetMapping("/get/{id}") @Override public @NotNull ResponseEntity<@NonNull UserModel> getData(@PathVariable @NotNull Long id)
     {
         return super.getData(id);
     }
@@ -112,7 +113,7 @@ public class UserController extends EntityController<Long, UserService, UserMode
      * @return a {@link ResponseEntity} containing the requested {@link UserModel}.
      */
     @GetMapping("/get/{id}/reduced")
-    public @NotNull ResponseEntity<ReducedUserModel> getReducedData(@PathVariable @NotNull Long id)
+    public @NotNull ResponseEntity<@NonNull ReducedUserModel> getReducedData(@PathVariable @NotNull Long id)
     {
         return getService().findReduced(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
@@ -129,7 +130,7 @@ public class UserController extends EntityController<Long, UserService, UserMode
      * @return a {@link ResponseEntity} containing the requested {@link UserModel}.
      */
     @PreAuthorize("@verificationService.isFullyAuthenticated()")
-    @GetMapping("/get") public @NotNull ResponseEntity<UserModel> getOwnData(@AuthenticationPrincipal long user)
+    @GetMapping("/get") public @NotNull ResponseEntity<@NonNull UserModel> getOwnData(@AuthenticationPrincipal long user)
     {
         return getData(user);
     }
@@ -147,7 +148,7 @@ public class UserController extends EntityController<Long, UserService, UserMode
      * @return a {@link ResponseEntity} containing a {@link String} token if the login is successful.
      */
     @PostMapping("/login")
-    public @NotNull ResponseEntity<@Nullable String> requestNormalLogin(@NotNull @RequestBody UserLoginModel model)
+    public @NotNull ResponseEntity<@NonNull String> requestNormalLogin(@NotNull @RequestBody UserLoginModel model)
     {
         log.info("The server has recognized an incoming normal login request login id {}.", model.loginName());
         return getService().requestLogin(model).map((token) ->
@@ -171,7 +172,7 @@ public class UserController extends EntityController<Long, UserService, UserMode
      * @return a {@link ResponseEntity} containing a success message upon successful login.
      */
     @PostMapping("/login/advanced")
-    public @NotNull ResponseEntity<String> requestAdvancedLogin(@AuthenticationPrincipal long userID)
+    public @NotNull ResponseEntity<@NonNull String> requestAdvancedLogin(@AuthenticationPrincipal long userID)
     {
         log.info("The server has recognized an incoming advanced login request for {}.", userID);
         return getService().requestLogin(new AdvancedUserLoginModel(userID)).map((token) ->
@@ -215,13 +216,13 @@ public class UserController extends EntityController<Long, UserService, UserMode
 
     @GetMapping("/get/all")
     @PreAuthorize("hasAuthority(T(de.gaz.eedu.user.privileges.SystemPrivileges).USER_OTHERS_GET.toString())")
-    @Override public @NotNull ResponseEntity<Set<UserModel>> fetchAll()
+    @Override public @NotNull ResponseEntity<UserModel @NonNull []> fetchAll()
     {
         return super.fetchAll();
     }
 
     @PreAuthorize("@verificationService.isFullyAuthenticated()") @GetMapping("/all/reduced")
-    public @NotNull ResponseEntity<ReducedUserModel[]> fetchAllReduced()
+    public @NotNull ResponseEntity<ReducedUserModel @NonNull []> fetchAllReduced()
     {
         return ResponseEntity.ok(getService().findAllReduced().toArray(new ReducedUserModel[0]));
     }
