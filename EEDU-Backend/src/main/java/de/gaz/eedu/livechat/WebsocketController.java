@@ -1,6 +1,5 @@
 package de.gaz.eedu.livechat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import de.gaz.eedu.livechat.chat.ChatModel;
 import de.gaz.eedu.livechat.chat.ChatService;
 import de.gaz.eedu.livechat.message.MessageModel;
@@ -14,6 +13,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.exc.JacksonIOException;
 
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class WebsocketController
     {
         try {
             return chatService.sendMessage(json);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return HttpStatus.BAD_REQUEST;
         }
     }
@@ -69,7 +70,7 @@ public class WebsocketController
 
     @GetMapping("/get")
     @PreAuthorize("@verificationService.isFullyAuthenticated()")
-    public ChatModel getChatData(@NotNull String json) throws JsonProcessingException
+    public ChatModel getChatData(@NotNull String json) throws JacksonException
     {
         return chatService.getChatData(json);
     }

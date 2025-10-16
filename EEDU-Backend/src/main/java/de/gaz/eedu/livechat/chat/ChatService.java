@@ -1,7 +1,5 @@
 package de.gaz.eedu.livechat.chat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gaz.eedu.entity.EntityService;
 import de.gaz.eedu.exception.CreationException;
 import de.gaz.eedu.exception.EntityUnknownException;
@@ -28,6 +26,8 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -170,7 +170,7 @@ public class ChatService extends EntityService<Long, ChatRepository, ChatEntity,
      *         or {@link HttpStatus#BAD_REQUEST} if there's an issue with the chat size.
      */
     @Transactional
-    public @NotNull HttpStatus sendMessage(@NotNull String json) throws JsonProcessingException
+    public @NotNull HttpStatus sendMessage(@NotNull String json) throws JacksonException
     {
         WebsocketMessageCreation message = deserializeJSON(json, WebsocketMessageCreation.class);
         UserEntity author = userService.loadEntityById(message.authorId()).orElse(null);
@@ -205,7 +205,7 @@ public class ChatService extends EntityService<Long, ChatRepository, ChatEntity,
         }).orElse(HttpStatus.UNAUTHORIZED);
     }
 
-    public <T> T deserializeJSON(@NotNull String json, @NotNull Class<T> dto) throws JsonProcessingException
+    public <T> T deserializeJSON(@NotNull String json, @NotNull Class<T> dto) throws JacksonException
     {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(json, dto);
@@ -228,7 +228,7 @@ public class ChatService extends EntityService<Long, ChatRepository, ChatEntity,
      * @throws ResponseStatusException with NOT_FOUND if the requested chat could not be found, and UNAUTHORIZED if the given user is not found inside the {@code users} attribute of the ChatEntity.
      */
     @Transactional
-    public ChatModel getChatData(@NotNull String json) throws JsonProcessingException
+    public ChatModel getChatData(@NotNull String json) throws JacksonException
     {
         WebsocketChatEdit dto = deserializeJSON(json, WebsocketChatEdit.class);
         return loadEntityById(dto.chatId()).map(chatEntity -> {
