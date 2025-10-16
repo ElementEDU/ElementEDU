@@ -38,7 +38,7 @@ export abstract class EntityService<P, C extends CreateModel, M extends Model<P>
     }
 
     /**
-     * Fetches all entities from the specified location.
+     * Fetches all entities from the specified location effectively.
      *
      * @return {Observable<readonly E[]>} An observable that emits an array of entities.
      */
