@@ -3,7 +3,7 @@ import {TestBed} from '@angular/core/testing';
 import {EntityService} from './entity-service';
 
 describe('EntityService', () => {
-    let service: EntityService;
+    let service: EntityService<any, any, any>;
 
     beforeEach(() => {
         TestBed.configureTestingModule({});
