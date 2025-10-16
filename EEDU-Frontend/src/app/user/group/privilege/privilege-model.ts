@@ -5,11 +5,7 @@ export interface GenericPrivilege extends GenericModel { id: string; }
 
 export class PrivilegeModel implements Model<string> {
 
-    public constructor(private readonly _id: string) {}
-
-    public get id(): string {
-        return this._id;
-    }
+    private constructor(public readonly id: string) {}
 
     public static fromObject(obj: GenericPrivilege): PrivilegeModel {
         return new PrivilegeModel(obj.id);

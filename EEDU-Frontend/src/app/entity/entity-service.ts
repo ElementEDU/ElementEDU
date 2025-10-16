@@ -25,8 +25,9 @@ export abstract class EntityService<P, M extends Model<P>, G extends GenericMode
     private _fetched: boolean = false;
 
     protected constructor(
+        private readonly _http: HttpClient,
         private readonly _location: string,
-        private readonly _http: HttpClient
+        private readonly _privileges: { create: string, delete: string, fetch: string; }
     ) {}
 
     /**

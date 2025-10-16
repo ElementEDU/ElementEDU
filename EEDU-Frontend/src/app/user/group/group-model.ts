@@ -8,11 +8,10 @@ export interface GenericGroup {
 
 export class GroupModel implements Model<string>
 {
-    public constructor(private readonly _id: string, private readonly _privileges: PrivilegeModel[]) {}
-
-    public get id(): string {
-        return this._id;
-    }
+    private  constructor(
+        public readonly id: string,
+        private readonly _privileges: PrivilegeModel[]
+    ) {}
 
     public get privileges(): PrivilegeModel[] {
         return this._privileges;
