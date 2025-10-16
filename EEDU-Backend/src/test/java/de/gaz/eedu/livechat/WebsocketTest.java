@@ -2,9 +2,9 @@ package de.gaz.eedu.livechat;
 import org.junit.jupiter.api.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.servlet.ServletWebServerFactory;
+import org.springframework.boot.web.server.test.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -40,7 +40,7 @@ public class WebsocketTest
     @BeforeEach
     public void wsSetup()
     {
-        TestRestTemplate restTemplate = new TestRestTemplate();
+        //TestRestTemplate restTemplate = new TestRestTemplate();
         blockingQueue = new LinkedBlockingQueue<>();
         SockJsClient sockJsClient = new SockJsClient(List.of(new WebSocketTransport(new StandardWebSocketClient())));
         stompClient = new WebSocketStompClient(sockJsClient);
