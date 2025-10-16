@@ -4,6 +4,7 @@ import {Model} from './model';
 import {BehaviorSubject, finalize, map, Observable, OperatorFunction, tap} from 'rxjs';
 import {CreateModel} from './create-model';
 import {HttpClient} from '@angular/common/http';
+import {GenericModel} from './generic-model';
 
 /**
  * EntityService is an abstract class intended to be extended for managing entities.
@@ -16,7 +17,7 @@ import {HttpClient} from '@angular/common/http';
 @Injectable({
     providedIn: 'root'
 })
-export abstract class EntityService<P, C extends CreateModel, M extends Model<P>> {
+export abstract class EntityService<P, M extends Model<P>, G extends GenericModel, C extends CreateModel> {
 
     private readonly CONTEXT: { withCredentials: true } = { withCredentials: true };
 
@@ -44,7 +45,7 @@ export abstract class EntityService<P, C extends CreateModel, M extends Model<P>
      */
     public get fetchAll(): Observable<readonly M[]>
     {
-        return this._http.get<any>(`${this.location}/get`, this.CONTEXT).pipe(
+        return this._http.get<G[]>(`${this.location}/get`, this.CONTEXT).pipe(
             this.toModelOperation,
             tap((entities: readonly M[]): void => { this._subject.next(this.sort(entities)); }),
             finalize((): void => { this._fetched = true; })
@@ -64,8 +65,8 @@ export abstract class EntityService<P, C extends CreateModel, M extends Model<P>
      */
     public fetch(id: P): Observable<M>
     {
-        return this._http.get<any>(`${this.location}/get/${id}`, this.CONTEXT).pipe(
-            map((data: any): M => this.toModel(data))
+        return this._http.get<G>(`${this.location}/get/${id}`, this.CONTEXT).pipe(
+            map((data: G): M => this.toModel(data))
         );
     }
 
@@ -101,8 +102,8 @@ export abstract class EntityService<P, C extends CreateModel, M extends Model<P>
      * @return {OperatorFunction<any[], readonly E[]>} An observable transformation function that maps
      * input data to a readonly array of entities.
      */
-    private get toModelOperation(): OperatorFunction<any[], readonly M[]> {
-        return map((data: any): readonly M[] => this.toModels(data));
+    private get toModelOperation(): OperatorFunction<G[], readonly M[]> {
+        return map((data: G[]): readonly M[] => this.toModels(data));
     }
 
     /**
@@ -111,8 +112,8 @@ export abstract class EntityService<P, C extends CreateModel, M extends Model<P>
      * @param {any[]} data - The array of data objects to be converted into entities.
      * @return {readonly E[]} An array of entities of type E, created from the provided data.
      */
-    protected toModels(data: any[]): readonly M[] {
-        return data.map((item: any): M => this.toModel(item));
+    protected toModels(data: G[]): readonly M[] {
+        return data.map((item: G): M => this.toModel(item));
     }
 
     /**
@@ -122,7 +123,7 @@ export abstract class EntityService<P, C extends CreateModel, M extends Model<P>
      * @param {any} data - The input data to be transformed into an entity.
      * @return {E} The transformed entity of type E.
      */
-    protected abstract toModel(data: any): M;
+    protected abstract toModel(data: G): M;
 
     /**
      * Retrieves the current fetched status.
