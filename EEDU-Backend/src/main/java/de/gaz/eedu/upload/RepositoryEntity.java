@@ -5,13 +5,15 @@ import de.gaz.eedu.entity.model.EntityModelRelation;
 import de.gaz.eedu.upload.file.FileEntity;
 import de.gaz.eedu.user.UserEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Getter
+@Entity @Getter @AllArgsConstructor @NoArgsConstructor
 public class RepositoryEntity implements EntityModelRelation<Long, RepositoryModel>
 {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
@@ -33,7 +35,7 @@ public class RepositoryEntity implements EntityModelRelation<Long, RepositoryMod
     @Override
     public RepositoryModel toModel()
     {
-        return null;
+        return new RepositoryModel(getId(), getFiles().stream().map(FileEntity::toModel).collect(Collectors.toSet()));
     }
 
     public Set<UserEntity> getContributors()

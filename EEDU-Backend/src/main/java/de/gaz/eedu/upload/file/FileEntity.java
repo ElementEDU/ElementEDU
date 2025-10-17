@@ -8,10 +8,14 @@ import de.gaz.eedu.user.privileges.PrivilegeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
-@AllArgsConstructor @Getter
+@Entity @AllArgsConstructor @Getter @Setter
+@NoArgsConstructor
 public class FileEntity implements EntityModelRelation<Long, FileModel>
 {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
@@ -22,7 +26,7 @@ public class FileEntity implements EntityModelRelation<Long, FileModel>
     private String mimeType;
     @ManyToMany(fetch= FetchType.LAZY)
     @JoinTable(name="file_read_privileges", joinColumns = @JoinColumn(name = "file_id"),
-               inverseJoinColumns = @JoinColumn(name="privilege_id"))private Set<PrivilegeEntity> readPrivileges;
+               inverseJoinColumns = @JoinColumn(name="privilege_id")) private Set<PrivilegeEntity> readPrivileges;
 
     @Override
     public boolean deleteManagedRelations()
@@ -42,6 +46,7 @@ public class FileEntity implements EntityModelRelation<Long, FileModel>
     @Override
     public FileModel toModel()
     {
-        return new FileModel(id, getUpload(), getUploader(), getHash(), getFileName(), getMimeType(), getReadPrivileges());
+        return new FileModel(id, getRepo().toModel(), getUploader().toModel(), getHash(), getFileName(), getMimeType(),
+                getReadPrivileges().stream().map(PrivilegeEntity::toModel).collect(Collectors.toSet()));
     }
 }
