@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -83,6 +84,7 @@ public class FileService extends EntityService<Long, FileRepository, FileEntity,
         }
         return hexString.toString();
     }
+
 
     private @NotNull FileEntity populateEntity(@NotNull FileEntity entity, @NotNull FileCreateModel m)
     {

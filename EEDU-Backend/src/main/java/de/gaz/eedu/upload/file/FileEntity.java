@@ -10,7 +10,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -49,4 +55,22 @@ public class FileEntity implements EntityModelRelation<Long, FileModel>
         return new FileModel(id, getRepo().toModel(), getUploader().toModel(), getHash(), getFileName(), getMimeType(),
                 getReadPrivileges().stream().map(PrivilegeEntity::toModel).collect(Collectors.toSet()));
     }
+
+    public String getFilePath()
+    {
+        return hash.substring(0, 2) + "/" + hash.substring(2, 4) + "/" + hash;
+    }
+
+    public void createDirectory(@NotNull String subdirectory)
+    {
+        File pathFile = new File(getFilePath());
+        Boolean directoryCreated = pathFile.mkdirs();
+
+        if(!directoryCreated)
+        {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "The server was unable to create the directory for your file.");
+        }
+    }
+
 }
