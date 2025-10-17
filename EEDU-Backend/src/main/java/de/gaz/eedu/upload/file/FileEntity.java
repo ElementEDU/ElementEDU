@@ -13,10 +13,12 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,13 +60,36 @@ public class FileEntity implements EntityModelRelation<Long, FileModel>
 
     public String getFilePath()
     {
-        return hash.substring(0, 2) + "/" + hash.substring(2, 4) + "/" + hash;
+        return hash.substring(0, 2) + "/" + hash.substring(2, 4) + "/";
+    }
+
+    public void uploadBatch(@NotNull String subdirectory, @NotNull MultipartFile file)
+    {
+        try
+        {
+            if(fileExists()) return;
+
+            createDirectory(subdirectory);
+
+            Path path = Path.of(getFilePath(), hash);
+            file.transferTo(path);
+        }
+        catch (IOException e)
+        {
+            System.out.println(e);
+        }
+    }
+
+    public boolean fileExists()
+    {
+        File f = new File(getFilePath() + hash);
+        return f.isFile();
     }
 
     public void createDirectory(@NotNull String subdirectory)
     {
         File pathFile = new File(getFilePath());
-        Boolean directoryCreated = pathFile.mkdirs();
+        boolean directoryCreated = pathFile.mkdirs();
 
         if(!directoryCreated)
         {
