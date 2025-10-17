@@ -1,8 +1,7 @@
 -- FILES --
 CREATE TABLE IF NOT EXISTS file_entity
 (
-    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
-    data_directory VARCHAR(255) NOT NULL
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY
 );
 
 CREATE TABLE IF NOT EXISTS file_user_privileges
@@ -10,14 +9,6 @@ CREATE TABLE IF NOT EXISTS file_user_privileges
     file_id   BIGINT       NOT NULL,
     privilege VARCHAR(255) NOT NULL,
     FOREIGN KEY (file_id) REFERENCES file_entity (id)
-);
-
-
-CREATE TABLE IF NOT EXISTS file_entity_tags
-(
-    file_entity_id BIGINT       NOT NULL,
-    tags           VARCHAR(255) NULL,
-    FOREIGN KEY (file_entity_id) REFERENCES file_entity (id)
 );
 
 -- Classes, Courses and Subjects --

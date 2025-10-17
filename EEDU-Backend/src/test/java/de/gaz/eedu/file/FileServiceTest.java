@@ -1,5 +1,8 @@
 package de.gaz.eedu.file;
 
+import de.gaz.eedu.upload.file.FileCreateModel;
+import de.gaz.eedu.upload.file.FileEntity;
+import de.gaz.eedu.upload.file.FileService;
 import jakarta.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;

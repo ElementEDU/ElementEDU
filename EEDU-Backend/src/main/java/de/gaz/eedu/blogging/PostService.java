@@ -2,9 +2,9 @@ package de.gaz.eedu.blogging;
 
 import de.gaz.eedu.entity.EntityService;
 import de.gaz.eedu.exception.CreationException;
-import de.gaz.eedu.file.FileCreateModel;
-import de.gaz.eedu.file.FileEntity;
-import de.gaz.eedu.file.FileService;
+import de.gaz.eedu.upload.file.FileCreateModel;
+import de.gaz.eedu.upload.file.FileEntity;
+import de.gaz.eedu.upload.file.FileService;
 import de.gaz.eedu.user.UserEntity;
 import de.gaz.eedu.user.UserService;
 import jakarta.transaction.Transactional;

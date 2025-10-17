@@ -14,7 +14,7 @@ import de.gaz.eedu.course.appointment.entry.assignment.AssignmentModel;
 import de.gaz.eedu.course.appointment.frequent.FrequentAppointmentEntity;
 import de.gaz.eedu.course.room.RoomEntity;
 import de.gaz.eedu.entity.model.EntityModelRelation;
-import de.gaz.eedu.file.FileEntity;
+import de.gaz.eedu.upload.file.FileEntity;
 import de.gaz.eedu.user.UserEntity;
 import de.gaz.eedu.user.model.ReducedUserModel;
 import jakarta.persistence.*;

@@ -11,7 +11,7 @@ import de.gaz.eedu.course.subject.SubjectEntity;
 import de.gaz.eedu.entity.model.EntityModelRelation;
 import de.gaz.eedu.exception.AccountTypeMismatch;
 import de.gaz.eedu.exception.StateTransitionException;
-import de.gaz.eedu.file.FileEntity;
+import de.gaz.eedu.upload.file.FileEntity;
 import de.gaz.eedu.user.AccountType;
 import de.gaz.eedu.user.UserEntity;
 import de.gaz.eedu.user.model.ReducedUserModel;

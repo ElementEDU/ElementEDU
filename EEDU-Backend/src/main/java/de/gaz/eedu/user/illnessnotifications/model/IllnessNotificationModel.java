@@ -1,7 +1,7 @@
 package de.gaz.eedu.user.illnessnotifications.model;
 
 import de.gaz.eedu.entity.model.EntityModel;
-import de.gaz.eedu.file.FileModel;
+import de.gaz.eedu.upload.file.FileModel;
 import de.gaz.eedu.user.illnessnotifications.IllnessNotificationStatus;
 import de.gaz.eedu.user.model.ReducedUserModel;
 import org.jetbrains.annotations.NotNull;

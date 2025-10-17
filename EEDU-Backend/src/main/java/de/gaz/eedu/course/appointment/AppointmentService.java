@@ -16,7 +16,7 @@ import de.gaz.eedu.course.room.RoomRepository;
 import de.gaz.eedu.entity.EntityService;
 import de.gaz.eedu.exception.CreationException;
 import de.gaz.eedu.exception.EntityUnknownException;
-import de.gaz.eedu.file.FileService;
+import de.gaz.eedu.upload.file.FileService;
 import de.gaz.eedu.user.UserEntity;
 import de.gaz.eedu.user.repository.UserRepository;
 import io.jsonwebtoken.io.IOException;
