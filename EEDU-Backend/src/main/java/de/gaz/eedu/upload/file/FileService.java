@@ -17,6 +17,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -50,9 +52,36 @@ public class FileService extends EntityService<Long, FileRepository, FileEntity,
         return model.stream().map(m -> populateEntity(new FileEntity(), m)).toList();
     }
 
-    public @NotNull String getHashFromFile(@NotNull MultipartFile file) throws NoSuchAlgorithmException
+    public @NotNull String getHashFromFile(@NotNull MultipartFile file) throws NoSuchAlgorithmException, IOException
     {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+        try(InputStream is = file.getInputStream())
+        {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != 0)
+            {
+                digest.update(buffer, 0, bytesRead);
+            }
+        }
+
+        return bytesToHex(digest.digest());
+    }
+
+    public @NotNull String bytesToHex(byte[] hash)
+    {
+        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        for (byte b : hash)
+        {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1)
+            {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     private @NotNull FileEntity populateEntity(@NotNull FileEntity entity, @NotNull FileCreateModel m)
