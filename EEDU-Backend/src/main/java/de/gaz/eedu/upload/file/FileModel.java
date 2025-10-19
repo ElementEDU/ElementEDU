@@ -11,7 +11,7 @@ import java.util.Set;
 
 public record FileModel(@NotNull Long id, RepositoryModel repo, @NotNull UserModel uploader,
                         @NotNull String hash, @NotNull String fileName, @NotNull String mimeType,
-                        @NotNull Set<PrivilegeModel> readPrivileges)
+                        @NotNull Set<String> readPrivileges)
         implements EntityModel<Long>
 {
     @Override

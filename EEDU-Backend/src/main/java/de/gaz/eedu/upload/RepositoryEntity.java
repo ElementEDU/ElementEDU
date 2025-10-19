@@ -18,7 +18,8 @@ public class RepositoryEntity implements EntityModelRelation<Long, RepositoryMod
 {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @OneToMany(mappedBy="upload", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference private Set<FileEntity> files;
+    @JsonManagedReference @JoinTable(name="repository_files", joinColumns = @JoinColumn(name="repo_id"),
+                                     inverseJoinColumns = @JoinColumn(name="file_id")) private Set<FileEntity> files;
 
     @Override
     public @NotNull Long getId()
