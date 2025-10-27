@@ -8,9 +8,14 @@ export interface GenericReducedUser {
     accountType: string;
 }
 
+/**
+ * Represents a more minimalistic version of the user.
+ * It can be used to portray a user account without loading its
+ * data or sharing it.
+ */
 export class ReducedUserModel implements Model<bigint> {
 
-    constructor(
+    private constructor(
         private readonly _id: bigint,
         private readonly _firstName: string,
         private readonly _lastName: string,
