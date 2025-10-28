@@ -81,8 +81,8 @@ public class CourseEntity implements EntityModelRelation<Long, CourseModel>
                 {
                     AccountType accountType = user.getAccountType();
                     return Objects.equals(accountType, AccountType.STUDENT);
-                }).map(UserEntity::toReducedModel).toArray(ReducedUserModel[]::new),
-                Arrays.stream(getEntries()).map(AppointmentEntryEntity::toModel).toArray(AppointmentEntryModel[]::new),
+                }).map(UserEntity::getId).toArray(Long[]::new),
+                Arrays.stream(getEntries()).map(AppointmentEntryEntity::getId).toArray(Long[]::new),
                 scheduled.map(FrequentAppointmentEntity::toModel).toArray(FrequentAppointmentModel[]::new),
                 getTeacher().map(UserEntity::toReducedModel).orElse(null),
                 getClassRoom().map(ClassRoomEntity::toModel).orElse(null)

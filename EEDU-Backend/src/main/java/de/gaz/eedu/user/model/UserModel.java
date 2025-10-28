@@ -40,9 +40,9 @@ public record UserModel(
         @NotNull String loginName,
         @NotNull AccountType accountType,
         @NotNull UserStatus status,
-        @NotNull GroupModel[] groups,
-        @NotNull ThemeModel theme,
-        @Nullable ClassRoomModel classroom
+        @NotNull String[] groups,
+        @NotNull Long theme,
+        @Nullable String classroom
 ) implements EntityModel<Long> {
 
     @Contract(pure = true) @Override public @NotNull String toString()

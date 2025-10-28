@@ -82,7 +82,7 @@ public class GroupEntity implements EntityModelRelation<String, GroupModel>
 
     @Override public @NotNull GroupModel toModel()
     {
-        PrivilegeModel[] models = getPrivileges().stream().map(PrivilegeEntity::toModel).toArray(PrivilegeModel[]::new);
+        String[] models = getPrivileges().stream().map(PrivilegeEntity::getId).toArray(String[]::new);
         return new GroupModel(getId(), models);
     }
 

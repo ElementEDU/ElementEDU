@@ -143,7 +143,7 @@ public class UserEntity implements UserDetails, EntityModelRelation<Long, UserMo
 
     @Override public UserModel toModel()
     {
-        GroupModel[] groups = getGroups().stream().map(GroupEntity::toModel).toArray(GroupModel[]::new);
+        String[] groups = getGroups().stream().map(GroupEntity::getId).toArray(String[]::new);
         return new UserModel(
                 getId(),
                 getFirstName(),
@@ -152,8 +152,8 @@ public class UserEntity implements UserDetails, EntityModelRelation<Long, UserMo
                 getAccountType(),
                 getStatus(),
                 groups,
-                getThemeEntity().toModel(),
-                getClassRoom().map(ClassRoomEntity::toModel).orElse(null)
+                getThemeEntity().getId(),
+                getClassRoom().map(ClassRoomEntity::getId).orElse(null)
         );
     }
 
