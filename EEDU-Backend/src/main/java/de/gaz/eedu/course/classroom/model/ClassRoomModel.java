@@ -1,7 +1,6 @@
 package de.gaz.eedu.course.classroom.model;
 
 import de.gaz.eedu.entity.model.EntityModel;
-import de.gaz.eedu.user.model.ReducedUserModel;
 import lombok.NonNull;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -12,8 +11,8 @@ import java.util.Objects;
 
 public record ClassRoomModel(
         @NonNull String id,
-        @NonNull ReducedUserModel[] students,
-        @Nullable ReducedUserModel tutor
+        @NonNull Long[] students,
+        @Nullable Long tutor
 ) implements EntityModel<String>
 {
 

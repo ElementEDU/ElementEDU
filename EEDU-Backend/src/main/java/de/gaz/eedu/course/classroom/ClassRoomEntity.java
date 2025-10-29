@@ -6,7 +6,6 @@ import de.gaz.eedu.course.classroom.model.ClassRoomModel;
 import de.gaz.eedu.entity.model.EntityModelRelation;
 import de.gaz.eedu.user.AccountType;
 import de.gaz.eedu.user.UserEntity;
-import de.gaz.eedu.user.model.ReducedUserModel;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -51,8 +50,8 @@ public class ClassRoomEntity implements EntityModelRelation<String, ClassRoomMod
     {
         return new ClassRoomModel(
                 getId(),
-                getStudents().stream().map(UserEntity::toReducedModel).toArray(ReducedUserModel[]::new),
-                getTutor().map(UserEntity::toReducedModel).orElse(null)
+                getStudents().stream().map(UserEntity::getId).toArray(Long[]::new),
+                getTutor().map(UserEntity::getId).orElse(null)
         );
     }
 
