@@ -1,0 +1,22 @@
+{
+  "name": "ElementEDU",
+  "build": { "dockerfile": "Dockerfile", "context": "." },
+  "workspaceFolder": "/home/eedu/ElementEDU",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/eedu/ElementEDU,type=bind,consistency=cached",
+  "forwardPorts": [8080, 4200],
+  "remoteUser": "eedu",
+  "overrideCommand": false,
+  "init": true,
+  "customizations": {
+    "jetbrains": {
+      "plugins": [
+        "com.intellij.spring",
+        "com.restful.tool",
+        "org.sonarlint.intellij",
+        "de.plushnikov.intellij.plugin",
+        "org.jetbrains.plugins.openapi"
+      ]
+    }
+  },
+  "postStartCommand": "/usr/local/bin/init-db.sh && sudo chown -R $(id -u):$(id -g) ~/ElementEDU"
+}
